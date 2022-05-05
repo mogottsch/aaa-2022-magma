@@ -1,0 +1,16 @@
+name: AAA_MAGMA
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - numpy
+  - pandas
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - geopandas
+  - ipykernel
+  - pip:
+      - h3
