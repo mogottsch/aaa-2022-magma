@@ -12,5 +12,7 @@ dependencies:
   - seaborn
   - geopandas
   - ipykernel
+  - tqdm
+  - ipywidgets
   - pip:
       - h3
