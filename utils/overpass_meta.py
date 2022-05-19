@@ -1,7 +1,7 @@
 def get_meta_data():
     return {
         "sustenance": {
-            "filepath": "../00_data/sustenance_pois.json",
+            "filename": "sustenance_pois.json",
             "query": """
                 [out:json]; 
                 area[name = "Leipzig"]->.a;
@@ -19,7 +19,7 @@ def get_meta_data():
             """,
         },
         "public_transport": {
-            "filepath": "../00_data/public_transport_pois.json",
+            "filename": "public_transport_pois.json",
             "query": """ [out:json]; 
                 area[name = "Leipzig"]->.a;
                 (   
@@ -30,7 +30,7 @@ def get_meta_data():
                 out; """,
         },
         "education": {
-            "filepath": "../00_data/education_pois.json",
+            "filename": "education_pois.json",
             "query": """ [out:json]; 
                 area[name = "Leipzig"]->.a;
                 (   
@@ -46,7 +46,7 @@ def get_meta_data():
                 out; """,
         },
         "arts_and_culture": {
-            "filepath": "../00_data/arts_and_culture_pois.json",
+            "filename": "arts_and_culture_pois.json",
             "query": """ [out:json]; 
                 area[name = "Leipzig"]->.a;
                 (   
@@ -57,7 +57,7 @@ def get_meta_data():
                 out;""",
         },
         "sports": {
-            "filepath": "../00_data/sports.json",
+            "filename": "sports.json",
             "query": """[out:json]; 
                 area[name = "Leipzig"]->.a;
                 (
