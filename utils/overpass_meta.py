@@ -24,8 +24,7 @@ def get_meta_data():
                 area[name = "Leipzig"]->.a;
                 (   
                     node(area.a)[public_transport=station];
-                    node(area.b)[public_transport=station];
-                    node(area.c)[public_transport=station];
+                    node(area.a)[public_transport=stop_position];
                 ); 
                 out; """,
         },
