@@ -14,5 +14,6 @@ dependencies:
   - ipykernel
   - tqdm
   - ipywidgets
+  - tqdm
   - pip:
       - h3
