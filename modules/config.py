@@ -32,6 +32,11 @@ MOVEMENTS_GROUPED_SPATIO_TEMPORAL_PATH = os.path.join(
 
 AVAILABILITY_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "availability.pkl")
 
+POIS_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "pois.pkl")
+HEXAGON_WITH_POIS_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "hexagons_with_pois.pkl")
+
+MODEL_DATA_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "model_data.pkl")
+
 REPO_DATA_DIR_PATH = os.path.join(DATA_DIR_PATH, "repo_data")
 FLEXZONE_GEOJSON_PATH = os.path.join(REPO_DATA_DIR_PATH, "leipzig.geojson")
 
