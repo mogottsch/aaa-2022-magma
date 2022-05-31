@@ -15,5 +15,7 @@ dependencies:
   - tqdm
   - ipywidgets
   - tqdm
+  - pyarrow
+  - fastparquet
   - pip:
       - h3
