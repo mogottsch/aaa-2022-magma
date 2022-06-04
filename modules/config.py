@@ -30,7 +30,7 @@ MOVEMENTS_GROUPED_SPATIO_TEMPORAL_PATH = os.path.join(
 )
 
 WEATHER_AGGR_TEMPORAL_PATH = os.path.join(
-    REPO_DATA_DIR_PATH, "weather_grouped_temporal.parquet"
+    REPO_DATA_DIR_PATH, "weather_aggr.parquet"
 )
 
 AVAILABILITY_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "availability.parquet")
