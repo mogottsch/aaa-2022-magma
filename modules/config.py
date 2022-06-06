@@ -33,6 +33,10 @@ WEATHER_AGGR_TEMPORAL_PATH = os.path.join(
     REPO_DATA_DIR_PATH, "weather_aggr.parquet"
 )
 
+HEXAGONS_WITH_LAND_USE_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "hexagons_land_use_columns.parquet"
+)
+
 AVAILABILITY_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "availability.parquet")
 
 POIS_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "pois.parquet")
@@ -41,6 +45,7 @@ HEXAGON_WITH_POIS_PATH = os.path.join(
 )
 
 MODEL_DATA_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "model_data.parquet")
+SVM_RESULTS_PATH = os.path.join(REPO_DATA_DIR_PATH, "svm_results.parquet")
 
 
 FLEXZONE_GEOJSON_PATH = os.path.join(REPO_DATA_DIR_PATH, "leipzig.geojson")
