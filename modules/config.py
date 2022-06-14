@@ -29,8 +29,10 @@ MOVEMENTS_GROUPED_SPATIO_TEMPORAL_PATH = os.path.join(
     PROCESSED_DATA_DIR_PATH, "movements_grouped_spatio_temporal.parquet"
 )
 
-WEATHER_AGGR_TEMPORAL_PATH = os.path.join(
-    REPO_DATA_DIR_PATH, "weather_aggr.parquet"
+WEATHER_AGGR_TEMPORAL_PATH = os.path.join(REPO_DATA_DIR_PATH, "weather_aggr.parquet")
+
+HEXAGONS_WITH_LAND_USE_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "hexagons_land_use_columns.parquet"
 )
 
 AVAILABILITY_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "availability.parquet")
@@ -40,8 +42,12 @@ HEXAGON_WITH_POIS_PATH = os.path.join(
     PROCESSED_DATA_DIR_PATH, "hexagons_with_pois.parquet"
 )
 
-MODEL_DATA_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "model_data.parquet")
-
+MODEL_DATA_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "model_data.feather")
+MODEL_DATA_DIR_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "model_data")
+SVM_RESULTS_PATH = os.path.join(REPO_DATA_DIR_PATH, "svm_results.parquet")
+NN_FIRST_STAGE_RESULTS_PATH = os.path.join(REPO_DATA_DIR_PATH, "nn_first_stage_results.parquet")
+NN_SECOND_STAGE_RESULTS_PATH = os.path.join(REPO_DATA_DIR_PATH, "nn_second_stage_results.parquet")
+NN_THIRD_STAGE_RESULTS_PATH = os.path.join(REPO_DATA_DIR_PATH, "nn_third_stage_results.parquet")
 
 FLEXZONE_GEOJSON_PATH = os.path.join(REPO_DATA_DIR_PATH, "leipzig.geojson")
 

@@ -14,8 +14,9 @@ dependencies:
   - ipykernel
   - tqdm
   - ipywidgets
-  - tqdm
   - pyarrow
   - fastparquet
+  - tensorflow
+  - keras
   - pip:
       - h3
