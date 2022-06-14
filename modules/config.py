@@ -29,10 +29,12 @@ MOVEMENTS_GROUPED_SPATIO_TEMPORAL_PATH = os.path.join(
     PROCESSED_DATA_DIR_PATH, "movements_grouped_spatio_temporal.parquet"
 )
 
-WEATHER_AGGR_TEMPORAL_PATH = os.path.join(REPO_DATA_DIR_PATH, "weather_aggr.parquet")
-
 HEXAGONS_WITH_LAND_USE_PATH = os.path.join(
     REPO_DATA_DIR_PATH, "hexagons_land_use_columns.parquet"
+)
+
+WEATHER_AGGR_TEMPORAL_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "weather_aggr.parquet"
 )
 
 AVAILABILITY_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "availability.parquet")
