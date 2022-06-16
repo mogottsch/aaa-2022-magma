@@ -43,6 +43,7 @@ HEXAGON_WITH_POIS_PATH = os.path.join(
 )
 
 MODEL_DATA_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "model_data.feather")
+REDUCED_MODEL_DATA_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "reduced_model_data.feather")
 MODEL_DATA_DIR_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "model_data")
 SVM_RESULTS_PATH = os.path.join(REPO_DATA_DIR_PATH, "svm_results.parquet")
 NN_FIRST_STAGE_RESULTS_PATH = os.path.join(
