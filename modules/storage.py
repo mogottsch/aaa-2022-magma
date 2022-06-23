@@ -3,8 +3,13 @@ from modules.config import *
 
 # ---------------------------------------------------------------------------------------------------
 
-def get_model_data(h3_res, time_interval_length):
-    model_data = pd.read_feather(os.path.join(MODEL_DATA_DIR_PATH, f"{h3_res}_{time_interval_length}.feather"))
+def get_demand_model_data(h3_res, time_interval_length):
+    model_data = pd.read_feather(os.path.join(MODEL_DATA_DIR_PATH, f"demand_{h3_res}_{time_interval_length}.feather"))
+    return model_data
+
+
+def get_availability_model_data(h3_res, time_interval_length):
+    model_data = pd.read_feather(os.path.join(MODEL_DATA_DIR_PATH, f"availability_{h3_res}_{time_interval_length}.feather"))
     return model_data
 
 
