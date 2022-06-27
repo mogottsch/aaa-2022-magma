@@ -10,8 +10,7 @@ def get_demand_model_data(h3_res, time_interval_length) -> pd.DataFrame:
             MODEL_DATA_DIR_PATH, f"demand_{h3_res}_{time_interval_length}.feather"
         )
     )
-    model_data["outcome"] = model_data["demand"]
-    model_data = model_data.drop(["demand"], axis=1)
+    model_data = model_data.rename(columns={"demand": "outcome"})
     return model_data
 
 
@@ -21,6 +20,7 @@ def get_availability_model_data(h3_res, time_interval_length) -> pd.DataFrame:
             MODEL_DATA_DIR_PATH, f"availability_{h3_res}_{time_interval_length}.feather"
         )
     )
+    model_data = model_data.rename(columns={"availability": "outcome"})
     return model_data
 
 
