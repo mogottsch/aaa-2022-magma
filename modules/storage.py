@@ -3,17 +3,28 @@ from modules.config import *
 
 # ---------------------------------------------------------------------------------------------------
 
-def get_demand_model_data(h3_res, time_interval_length):
-    model_data = pd.read_feather(os.path.join(MODEL_DATA_DIR_PATH, f"demand_{h3_res}_{time_interval_length}.feather"))
+
+def get_demand_model_data(h3_res, time_interval_length) -> pd.DataFrame:
+    model_data = pd.read_feather(
+        os.path.join(
+            MODEL_DATA_DIR_PATH, f"demand_{h3_res}_{time_interval_length}.feather"
+        )
+    )
+    model_data["outcome"] = model_data["demand"]
+    model_data = model_data.drop(["demand"], axis=1)
     return model_data
 
 
-def get_availability_model_data(h3_res, time_interval_length):
-    model_data = pd.read_feather(os.path.join(MODEL_DATA_DIR_PATH, f"availability_{h3_res}_{time_interval_length}.feather"))
+def get_availability_model_data(h3_res, time_interval_length) -> pd.DataFrame:
+    model_data = pd.read_feather(
+        os.path.join(
+            MODEL_DATA_DIR_PATH, f"availability_{h3_res}_{time_interval_length}.feather"
+        )
+    )
     return model_data
 
 
-def get_results_df(path):
+def get_results_df(path) -> pd.DataFrame:
     if os.path.isfile(path):
         return pd.read_parquet(path)
     return pd.DataFrame()
@@ -26,4 +37,3 @@ def store_results(new_results, path):
         results.to_parquet(path)
     else:
         new_results.to_parquet(path)
-
