@@ -16,5 +16,7 @@ dependencies:
   - ipywidgets
   - pyarrow
   - fastparquet
+  - tensorflow
+  - keras
   - pip:
       - h3
