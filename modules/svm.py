@@ -2,7 +2,7 @@ import pandas as pd
 from itertools import product
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR
+from sklearn.svm import SVR, LinearSVR
 from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import HalvingGridSearchCV
 
@@ -104,6 +104,9 @@ def split_and_scale_data(model_data_train, model_data_test):
 
 def train_model(param_grid, X_train, y_train):
     svr = SVR(cache_size=2000)
+    if param_grid[0]['kernel'] == 'linear':
+        svr = LinearSVR()
+
     models = HalvingGridSearchCV(svr, param_grid, n_jobs=-1, scoring="neg_mean_squared_error", random_state=42)
     models.fit(X_train, y_train)
     return models
