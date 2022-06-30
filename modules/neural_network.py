@@ -92,14 +92,14 @@ def get_third_stage_hyperparameters(
 
 
 def split_and_scale_data(
-    model_data,
+    model_data_train, model_data_test,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    y = model_data.outcome
-    X = model_data.drop(columns=["outcome"])
+    y_train = model_data_train.outcome
+    X_train = model_data_train.drop(columns=["outcome"])
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, train_size=0.7, random_state=42
-    )
+    y_test = model_data_test.outcome
+    X_test = model_data_test.drop(columns=["outcome"])
+
     X_train, X_valid, y_train, y_valid = train_test_split(
         X_train, y_train, train_size=0.7, random_state=42
     )

@@ -1,27 +1,39 @@
 import pandas as pd
 from modules.config import *
+from sklearn.model_selection import train_test_split
 
 # ---------------------------------------------------------------------------------------------------
 
 
 def get_demand_model_data(h3_res, time_interval_length) -> pd.DataFrame:
-    model_data = pd.read_feather(
-        os.path.join(
-            MODEL_DATA_DIR_PATH, f"demand_{h3_res}_{time_interval_length}.feather"
-        )
+    return get_model_data(
+        h3_res,
+        time_interval_length,
+        "demand",
+        "demand"
     )
-    model_data = model_data.rename(columns={"demand": "outcome"})
-    return model_data
 
 
 def get_availability_model_data(h3_res, time_interval_length) -> pd.DataFrame:
+    return get_model_data(
+        h3_res,
+        time_interval_length,
+        "availability",
+        "n_bikes"
+    )
+
+
+def get_model_data(h3_res, time_interval_length, predicted_variable, outcome_column):
     model_data = pd.read_feather(
         os.path.join(
-            MODEL_DATA_DIR_PATH, f"availability_{h3_res}_{time_interval_length}.feather"
+            MODEL_DATA_DIR_PATH, f"{predicted_variable}_{h3_res}_{time_interval_length}.feather"
         )
     )
-    model_data = model_data.rename(columns={"n_bikes": "outcome"})
-    return model_data
+    model_data = model_data.rename(columns={outcome_column: "outcome"})
+    model_data_train, model_data_test = train_test_split(
+        model_data, train_size=0.5, random_state=42
+    )
+    return model_data_train, model_data_test
 
 
 def get_results_df(path) -> pd.DataFrame:
