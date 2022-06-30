@@ -81,6 +81,10 @@ NN_FOURTH_STAGE_AVAILABILITY_RESULTS_PATH = os.path.join(
     REPO_DATA_DIR_PATH, "nn_fourth_stage_availability_results.parquet"
 )
 
+FINAL_MODEL_RESULTS_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "final_model_results.parquet"
+)
+
 FLEXZONE_GEOJSON_PATH = os.path.join(REPO_DATA_DIR_PATH, "leipzig.geojson")
 
 
