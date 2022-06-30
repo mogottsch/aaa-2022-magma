@@ -92,7 +92,8 @@ def get_third_stage_hyperparameters(
 
 
 def split_and_scale_data(
-    model_data_train, model_data_test,
+    model_data_train,
+    model_data_test,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     y_train = model_data_train.outcome
     X_train = model_data_train.drop(columns=["outcome"])
@@ -155,10 +156,10 @@ def execute_stage(
     test_phase=False,
     silent=False,
 ):
-    model_data = model_data_getter(h3_res, time_interval_length)
+    model_data_train, model_data_test = model_data_getter(h3_res, time_interval_length)
 
     X_train, X_valid, X_test, y_train, y_valid, y_test = split_and_scale_data(
-        model_data
+        model_data_train, model_data_test
     )
     if test_phase:
         X_train = np.concatenate([X_train, X_valid])
@@ -188,6 +189,7 @@ def execute_stage(
                 tqdm.write(console_out + " # already trained")
             continue
 
+        train_start = time.time()
         model = train_model(
             X_train,
             y_train,
@@ -197,6 +199,7 @@ def execute_stage(
             model_params["activation"],
             model_params["dropout"],
         )
+        train_duration = time.time() - train_start
 
         if not silent:
             tqdm.write(console_out + " # trained", end="\r")
@@ -211,6 +214,7 @@ def execute_stage(
             "n_layers": model_params["n_layers"],
             "activation": model_params["activation"],
             "dropout": model_params["dropout"],
+            "train_duration": train_duration,
             **get_evaluation_metrics(
                 y_valid, y_pred_for_validation, "test" if test_phase else "val"
             ),
