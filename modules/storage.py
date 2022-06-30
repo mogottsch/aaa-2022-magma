@@ -20,7 +20,7 @@ def get_availability_model_data(h3_res, time_interval_length) -> pd.DataFrame:
             MODEL_DATA_DIR_PATH, f"availability_{h3_res}_{time_interval_length}.feather"
         )
     )
-    model_data = model_data.rename(columns={"availability": "outcome"})
+    model_data = model_data.rename(columns={"n_bikes": "outcome"})
     return model_data
 
 
