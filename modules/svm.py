@@ -97,7 +97,7 @@ def split_and_scale_data(model_data, predicted_variable):
     X = model_data.drop(columns=[predicted_variable])
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, train_size=0.7, random_state=42
+        X, y, train_size=0.2, random_state=42
     )
 
     scaler = StandardScaler()
@@ -107,7 +107,7 @@ def split_and_scale_data(model_data, predicted_variable):
 
 
 def train_model(param_grid, X_train, y_train):
-    svr = SVR()
+    svr = SVR(cache_size=2000)
     models = HalvingGridSearchCV(svr, param_grid, n_jobs=-1, scoring="neg_mean_squared_error", random_state=42)
     models.fit(X_train, y_train)
     return models
