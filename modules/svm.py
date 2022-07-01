@@ -2,12 +2,9 @@ import pandas as pd
 from itertools import product
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR
+from sklearn.svm import SVR, LinearSVR
 from sklearn.experimental import enable_halving_search_cv
-from sklearn.model_selection import (
-    train_test_split,
-    HalvingGridSearchCV,
-)
+from sklearn.model_selection import HalvingGridSearchCV
 
 from sklearn.metrics import (
     mean_squared_error,
@@ -92,13 +89,12 @@ def get_availabe_models_metas_second_stage(h3_res, time_interval_length, all_pos
     return []
 
 
-def split_and_scale_data(model_data, predicted_variable):
-    y = model_data[predicted_variable]
-    X = model_data.drop(columns=[predicted_variable])
+def split_and_scale_data(model_data_train, model_data_test):
+    y_train = model_data_train['outcome']
+    X_train = model_data_train.drop(columns=['outcome'])
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, train_size=0.7, random_state=42
-    )
+    y_test = model_data_test['outcome']
+    X_test = model_data_test.drop(columns=['outcome'])
 
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
@@ -107,7 +103,10 @@ def split_and_scale_data(model_data, predicted_variable):
 
 
 def train_model(param_grid, X_train, y_train):
-    svr = SVR()
+    svr = SVR(cache_size=2000)
+    if param_grid[0]['kernel'] == 'linear':
+        svr = LinearSVR()
+
     models = HalvingGridSearchCV(svr, param_grid, n_jobs=-1, scoring="neg_mean_squared_error", random_state=42)
     models.fit(X_train, y_train)
     return models
