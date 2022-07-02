@@ -1,36 +1,39 @@
 import pandas as pd
 from itertools import product
+from tqdm.notebook import tqdm
+from typing import Tuple
 
+# for support vector machines
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVR
 from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import HalvingGridSearchCV
 
-from sklearn.metrics import (
-    mean_squared_error,
-    mean_absolute_error,
+from modules.evaluation import get_evaluation_metrics
+from modules.storage import (
+    get_demand_model_data,
+    get_results_df,
+    store_results,
 )
-from modules.evaluation import (
-    mean_average_percentage_error,
-    root_mean_squared_error
-)
-from modules.storage import get_results_df
 from modules.config import *
+from modules.svm import *
 
 # ---------------------------------------------------------------------------------------------------
 
-def check_if_model_result_empty(meta, results, h3_res, time_interval_length):
+def check_if_model_result_empty(
+    results: pd.DataFrame, h3_res: int, time_interval_length: int, meta: list
+) -> bool:
     return results[
-        (results['h3_res'] == h3_res) &
-        (results['time_interval_length'] == time_interval_length) &
-        (results['param_kernel'] == meta[0]) &
-        (results['param_C'] == meta[1]) &
-        ((results['param_gamma'] == meta[2]) | (pd.isnull(results['param_gamma']))) &
-        ((results['param_degree'] == meta[3]) | (pd.isnull(results['param_degree']))) 
+        (results['h3_res'] == h3_res)
+        & (results['time_interval_length'] == time_interval_length)
+        & (results['param_kernel'] == meta[0])
+        & (results['param_C'] == meta[1])
+        & ((results['param_gamma'] == meta[2]) | (pd.isnull(results['param_gamma'])))
+        & ((results['param_degree'] == meta[3]) | (pd.isnull(results['param_degree']))) 
     ]['mean_test_score'].empty
 
 
-def get_param_grid(model_meta):
+def get_param_grid(model_meta: dict) -> dict:
     param_grid = {
         'kernel': [model_meta[0]],
         'C': [model_meta[1]],
@@ -41,15 +44,21 @@ def get_param_grid(model_meta):
     return param_grid
 
 
-def get_availabe_models_metas_first_stage(h3_res, time_interval_length, all_possible_metas):
-    results = get_results_df(SVM_FIRST_STAGE_RESULTS_PATH)    
+def get_availabe_models_metas_first_stage(
+    h3_res: int,
+    time_interval_length: int,
+    all_possible_metas: dict,
+    first_stage_path: str,
+    second_stage_path: str,
+) -> list:
+    results = get_results_df(first_stage_path)    
 
     # the following code will create all possible combinations of parameters for all models
     metas = [list(product(*meta.values())) for meta in all_possible_metas]
     metas = [item for sublist in metas for item in sublist]
     available_metas = metas
     if not results.empty:
-        available_metas = [meta for meta in metas if check_if_model_result_empty(meta, results, h3_res, time_interval_length)]
+        available_metas = [meta for meta in metas if check_if_model_result_empty(results, h3_res, time_interval_length, meta)]
 
     # group_by h3 and time, put other params in param grid
     metas_grouped = []
@@ -60,9 +69,16 @@ def get_availabe_models_metas_first_stage(h3_res, time_interval_length, all_poss
 
     return metas_grouped
 
-def get_availabe_models_metas_second_stage(h3_res, time_interval_length, all_possible_metas):
-    results = get_results_df(SVM_FIRST_STAGE_RESULTS_PATH)    
-    best_model = results.sort_values(by=['mean_train_score'], ascending=False)
+
+def get_availabe_models_metas_second_stage(
+    h3_res: int,
+    time_interval_length: int,
+    all_possible_metas: dict,
+    first_stage_path: str,
+    second_stage_path: str,
+) -> list:
+    results_first_stage = get_results_df(first_stage_path) 
+    best_model = results_first_stage.sort_values(by=['mean_train_score'], ascending=False)
     meta = [
         h3_res,
         time_interval_length,
@@ -72,7 +88,8 @@ def get_availabe_models_metas_second_stage(h3_res, time_interval_length, all_pos
         best_model['param_degree'].iloc[0]
     ]
     
-    if ((not results.empty) & (check_if_model_result_empty(meta, results, h3_res, time_interval_length))):
+    results_second_stage = get_results_df(second_stage_path)
+    if ((not results_second_stage.empty) and (check_if_model_result_empty(results_second_stage, h3_res, time_interval_length, meta))):
         kernel = best_model['param_kernel'].iloc[0]
         params = {
             'kernel': [kernel],
@@ -89,7 +106,9 @@ def get_availabe_models_metas_second_stage(h3_res, time_interval_length, all_pos
     return []
 
 
-def split_and_scale_data(model_data_train, model_data_test):
+def split_and_scale_data(
+    model_data_train: pd.DataFrame, model_data_test: pd.DataFrame
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     y_train = model_data_train['outcome']
     X_train = model_data_train.drop(columns=['outcome'])
 
@@ -102,7 +121,7 @@ def split_and_scale_data(model_data_train, model_data_test):
     return X_train, X_test, y_train, y_test
 
 
-def train_model(param_grid, X_train, y_train):
+def train_model(param_grid: list, X_train: pd.DataFrame, y_train: pd.Series) -> HalvingGridSearchCV:
     svr = SVR(cache_size=2000)
     if param_grid[0]['kernel'] == 'linear':
         svr = LinearSVR()
@@ -112,7 +131,14 @@ def train_model(param_grid, X_train, y_train):
     return models
 
 
-def get_results(models, h3_res, time_interval_length, do_evaluate_model, X_test, y_test):
+def get_results(
+    models: HalvingGridSearchCV,
+    h3_res: int,
+    time_interval_length: int,
+    do_evaluate_model: bool,
+    X_test: pd.DataFrame,
+    y_test: pd.Series,
+) -> pd.DataFrame:
     results = pd.DataFrame(models.cv_results_)
     results['n_iter'] = 0
     results.loc[0, 'n_iter'] = models.best_estimator_.n_iter_
@@ -121,10 +147,50 @@ def get_results(models, h3_res, time_interval_length, do_evaluate_model, X_test,
 
     if do_evaluate_model:
         y_pred = models.best_estimator_.predict(X_test)
-        results['mse'] = mean_squared_error(y_test, y_pred)
-        results['mae'] = mean_absolute_error(y_test, y_pred)
-        results['mape'] = mean_average_percentage_error(y_test, y_pred)
-        results['rmse'] = root_mean_squared_error(y_test, y_pred)
+        evaluation_metrics = get_evaluation_metrics(y_test, y_pred, 'test')
+        results['test_mse'] = evaluation_metrics['test_mse']
+        results['test_rmse'] = evaluation_metrics['test_rmse']
+        results['test_mae'] = evaluation_metrics['test_mae']
+        results['test_non_zero_mape'] = evaluation_metrics['test_non_zero_mape']
+        results['test_zero_accuracy'] = evaluation_metrics['test_zero_accuracy']
         
     return results
+
+
+def execute_stage(
+    results_path: str,
+    first_stage_path: str,
+    second_stage_path: str,
+    h3_res: int,
+    time_interval_length: int,
+    all_possible_metas: dict,
+    get_available_model_metas_for_stage,
+    do_evaluate_model: bool,
+    silent: bool,
+):
+    metas = get_available_model_metas_for_stage(
+        h3_res,
+        time_interval_length,
+        all_possible_metas,
+        first_stage_path,
+        second_stage_path,
+    )
+    
+    iterator = metas if silent else tqdm(metas)
+    for param_grid in iterator:
+        if not silent:
+            feedback = f"h3: {h3_res} | t:{time_interval_length} | - " + param_grid[0]["kernel"][0]
+            tqdm.write(feedback, end="\r")
+        
+        model_data_train, model_data_test = get_demand_model_data(h3_res, time_interval_length)
+        if len(model_data_train) > SVM_MAX_TRAIN_SET_SIZE:
+            model_data_train = model_data_train.sample(SVM_MAX_TRAIN_SET_SIZE)
+
+        X_train, X_test, y_train, y_test = split_and_scale_data(model_data_train, model_data_test)
+        models = train_model(param_grid, X_train, y_train)
+        results = get_results(models, h3_res, time_interval_length, do_evaluate_model, X_test, y_test)
+        store_results(results, results_path)  
+        
+        if not silent:
+            tqdm.write(feedback + " ✓")
 

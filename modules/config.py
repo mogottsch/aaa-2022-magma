@@ -48,11 +48,19 @@ REDUCED_MODEL_DATA_PATH = os.path.join(
 )
 MODEL_DATA_DIR_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "model_data")
 
-SVM_FIRST_STAGE_RESULTS_PATH = os.path.join(
-    REPO_DATA_DIR_PATH, "svm_first_stage_results.parquet"
+
+SVM_FIRST_STAGE_DEMAND_RESULTS_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "svm_first_stage_demand_results.parquet"
 )
-SVM_SECOND_STAGE_RESULTS_PATH = os.path.join(
-    REPO_DATA_DIR_PATH, "svm_second_stage_results.parquet"
+SVM_SECOND_STAGE_DEMAND_RESULTS_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "svm_second_stage_demand_results.parquet"
+)
+
+SVM_FIRST_STAGE_AVAILABILITY_RESULTS_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "svm_first_stage_availability_results.parquet"
+)
+SVM_SECOND_STAGE_AVAILABILITY_RESULTS_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "svm_second_stage_availability_results.parquet"
 )
 
 NN_FIRST_STAGE_DEMAND_RESULTS_PATH = os.path.join(
@@ -103,3 +111,6 @@ CALC_TIME_INTERVAL_LENGTHS = [1, 2, 6, 24]
 
 # defined as (h3, time)
 ADDITIONAL_PREDICTIVE_RESOLUTIONS = [(9, 24)]
+
+
+SVM_MAX_TRAIN_SET_SIZE = 1000
