@@ -9,19 +9,8 @@ def get_demand_model_data(h3_res, time_interval_length) -> pd.DataFrame:
     return get_model_data(h3_res, time_interval_length, "demand", "demand")
 
 
-def get_demand_orig_dest_model_data() -> pd.DataFrame:
-    model_data = pd.read_feather(
-        os.path.join(
-            MODEL_DATA_DIR_PATH,
-            f"demand_{ORIGIN_DESTINATION_H3_RESOLUTION}_{ORIGIN_DESTINATION_TIME_INTERVAL_LENGTH}.feather",
-        )
-    )
-    model_data = model_data.rename(columns={"demand": "outcome"})
-
-    model_data_train, model_data_test = train_test_split(
-        model_data, train_size=0.5, random_state=42
-    )
-    return model_data_train, model_data_test
+def get_demand_orig_dest_model_data(h3_res, time_interval_length) -> pd.DataFrame:
+    return get_model_data(h3_res, time_interval_length, "demand_orig_dest", "demand")
 
 
 def get_availability_model_data(h3_res, time_interval_length) -> pd.DataFrame:
