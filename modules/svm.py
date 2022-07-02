@@ -1,3 +1,4 @@
+from fsspec import Callback
 import pandas as pd
 from itertools import product
 from tqdm.notebook import tqdm
@@ -42,6 +43,10 @@ def get_param_grid(model_meta: dict) -> dict:
     if model_meta[2] > 0: param_grid = {**param_grid, 'gamma': [model_meta[2]]}
     if model_meta[3] > 0: param_grid = {**param_grid, 'degree': [model_meta[3]]}
     return param_grid
+
+
+def get_model_meta_function_for_stage(stage: str) -> Callback:
+    return get_availabe_models_metas_first_stage if (stage == "first_stage") else get_availabe_models_metas_second_stage
 
 
 def get_availabe_models_metas_first_stage(
@@ -135,7 +140,7 @@ def get_results(
     models: HalvingGridSearchCV,
     h3_res: int,
     time_interval_length: int,
-    do_evaluate_model: bool,
+    stage: str,
     X_test: pd.DataFrame,
     y_test: pd.Series,
 ) -> pd.DataFrame:
@@ -145,7 +150,7 @@ def get_results(
     results['h3_res'] = h3_res
     results['time_interval_length'] = time_interval_length
 
-    if do_evaluate_model:
+    if (stage == "second_stage"):
         y_pred = models.best_estimator_.predict(X_test)
         evaluation_metrics = get_evaluation_metrics(y_test, y_pred, 'test')
         results['test_mse'] = evaluation_metrics['test_mse']
@@ -158,17 +163,16 @@ def get_results(
 
 
 def execute_stage(
-    results_path: str,
+    stage: str,
     first_stage_path: str,
     second_stage_path: str,
     h3_res: int,
     time_interval_length: int,
     all_possible_metas: dict,
-    get_available_model_metas_for_stage,
-    do_evaluate_model: bool,
-    silent: bool,
+    model_data_getter: Callback,
 ):
-    metas = get_available_model_metas_for_stage(
+    model_metas_getter = get_model_meta_function_for_stage(stage)
+    metas = model_metas_getter(
         h3_res,
         time_interval_length,
         all_possible_metas,
@@ -176,21 +180,23 @@ def execute_stage(
         second_stage_path,
     )
     
-    iterator = metas if silent else tqdm(metas)
+    iterator = tqdm(metas) if (stage == "first_stage") else metas
     for param_grid in iterator:
-        if not silent:
+        if (stage == "first_stage"):
             feedback = f"h3: {h3_res} | t:{time_interval_length} | - " + param_grid[0]["kernel"][0]
             tqdm.write(feedback, end="\r")
         
-        model_data_train, model_data_test = get_demand_model_data(h3_res, time_interval_length)
+        model_data_train, model_data_test = model_data_getter(h3_res, time_interval_length)
         if len(model_data_train) > SVM_MAX_TRAIN_SET_SIZE:
             model_data_train = model_data_train.sample(SVM_MAX_TRAIN_SET_SIZE)
 
         X_train, X_test, y_train, y_test = split_and_scale_data(model_data_train, model_data_test)
         models = train_model(param_grid, X_train, y_train)
-        results = get_results(models, h3_res, time_interval_length, do_evaluate_model, X_test, y_test)
+        results = get_results(models, h3_res, time_interval_length, stage, X_test, y_test)
+        
+        results_path = first_stage_path if (stage == "first_stage") else second_stage_path
         store_results(results, results_path)  
         
-        if not silent:
+        if (stage == "first_stage"):
             tqdm.write(feedback + " ✓")
 
