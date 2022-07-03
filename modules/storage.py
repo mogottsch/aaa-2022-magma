@@ -9,8 +9,13 @@ def get_demand_model_data(h3_res, time_interval_length) -> pd.DataFrame:
     return get_model_data(h3_res, time_interval_length, "demand", "demand")
 
 
-def get_demand_orig_dest_model_data(h3_res, time_interval_length) -> pd.DataFrame:
-    return get_model_data(h3_res, time_interval_length, "demand_orig_dest", "demand")
+def get_demand_orig_dest_model_data() -> pd.DataFrame:
+    return get_model_data(
+        ORIGIN_DESTINATION_H3_RESOLUTION,
+        ORIGIN_DESTINATION_TIME_INTERVAL_LENGTH,
+        "demand_orig_dest",
+        "demand",
+    )
 
 
 def get_availability_model_data(h3_res, time_interval_length) -> pd.DataFrame:

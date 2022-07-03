@@ -1,8 +1,10 @@
+import itertools
 from time import time
 from pandas import DataFrame, Series
 import pandas as pd
 import h3
 import numpy as np
+from modules.config import *
 
 
 def aggregate(
@@ -48,7 +50,7 @@ def calculate_availability(
     first_locations, last_locations = _prepare_locations(
         first_locations, last_locations, h3_resolution, time_interval_length
     )
-    full_index = _get_full_index(
+    full_index = get_full_index(
         starting_movements,
         ending_movements,
         first_locations,
@@ -115,7 +117,7 @@ def _prepare_locations(
     return first_locations, last_locations
 
 
-def _get_full_index(
+def get_full_index(
     starting_movements: DataFrame,
     ending_movements: DataFrame,
     first_locations: DataFrame,
@@ -180,3 +182,36 @@ def reduce_mem_usage(df):
     print("Decreased by {:.1f}%".format(100 * (start_mem - end_mem) / start_mem))
 
     return df
+
+
+def reindex_on_full_index(
+    trips: DataFrame,
+    h3_res: int,
+    time_interval_length: int,
+    start_and_end: bool = False,
+) -> DataFrame:
+    datetime_col_name = "datetime"
+    hex_col_name = "start_hex_id" if start_and_end else "hex_id"
+
+    index_levels = [
+        pd.date_range(
+            start=trips.index.get_level_values(datetime_col_name).min(),
+            end=trips.index.get_level_values(datetime_col_name).max(),
+            freq=f"{time_interval_length}H",
+        ),
+        trips.index.get_level_values(hex_col_name).unique(),
+    ]
+    index_names = [datetime_col_name, hex_col_name]
+    if start_and_end:
+        index_levels.append(trips.index.get_level_values("end_hex_id").unique())
+        index_names.append("end_hex_id")
+
+    full_index = pd.MultiIndex.from_product(
+        index_levels,
+        names=index_names,
+    )
+
+    trips = trips.reindex(full_index, fill_value=0)
+    trips["time_interval_length"] = time_interval_length
+    trips["h3_res"] = h3_res
+    return trips
