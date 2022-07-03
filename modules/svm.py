@@ -1,4 +1,6 @@
+from unittest import result
 from fsspec import Callback
+from numpy import NaN
 import pandas as pd
 from itertools import product
 from tqdm.notebook import tqdm
@@ -12,7 +14,6 @@ from sklearn.model_selection import HalvingGridSearchCV
 
 from modules.evaluation import get_evaluation_metrics
 from modules.storage import (
-    get_demand_model_data,
     get_results_df,
     store_results,
 )
@@ -94,7 +95,7 @@ def get_availabe_models_metas_second_stage(
     ]
     
     results_second_stage = get_results_df(second_stage_path)
-    if ((not results_second_stage.empty) and (check_if_model_result_empty(results_second_stage, h3_res, time_interval_length, meta))):
+    if ((results_second_stage.empty) or (check_if_model_result_empty(results_second_stage, h3_res, time_interval_length, meta))):
         kernel = best_model['param_kernel'].iloc[0]
         params = {
             'kernel': [kernel],
@@ -136,6 +137,13 @@ def train_model(param_grid: list, X_train: pd.DataFrame, y_train: pd.Series) -> 
     return models
 
 
+def check_and_append_missing_columns(results: pd.DataFrame, missing_columns: list) -> pd.DataFrame:
+    for column in missing_columns:
+        if (column not in results.columns):
+            results[column] = NaN
+    return results
+
+
 def get_results(
     models: HalvingGridSearchCV,
     h3_res: int,
@@ -158,7 +166,9 @@ def get_results(
         results['test_mae'] = evaluation_metrics['test_mae']
         results['test_non_zero_mape'] = evaluation_metrics['test_non_zero_mape']
         results['test_zero_accuracy'] = evaluation_metrics['test_zero_accuracy']
-        
+
+        check_and_append_missing_columns(results, ['param_gamma', 'param_degree'])
+
     return results
 
 
