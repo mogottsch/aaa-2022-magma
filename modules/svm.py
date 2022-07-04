@@ -84,7 +84,7 @@ def get_availabe_models_metas_second_stage(
     second_stage_path: str,
 ) -> list:
     results_first_stage = get_results_df(first_stage_path) 
-    best_model = results_first_stage.sort_values(by=['mean_train_score'], ascending=False)
+    best_model = results_first_stage.sort_values(by=['mean_test_score'], ascending=False)
     meta = [
         h3_res,
         time_interval_length,
