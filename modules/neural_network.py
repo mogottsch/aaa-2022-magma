@@ -94,6 +94,12 @@ def get_third_stage_hyperparameters(
     return models_metas
 
 
+def save_model(model: Sequential, h3_res: int, time_interval_length: int):
+    model.save(
+        os.path.join(KERAS_MODELS_DIR_PATH, f"{h3_res}_{time_interval_length}.h5")
+    )
+
+
 def train_model(
     X_train: pd.DataFrame,
     y_train: pd.Series,
@@ -126,7 +132,9 @@ def train_model(
     model.compile(optimizer="adam", loss="mean_squared_error", metrics=["mae"])
 
     early_stopping = EarlyStopping(patience=5, min_delta=0.001)
-    n_epochs = 40
+    # the number of epochs does not matter for us, as long as it
+    # is high enough so that we can stop the training early
+    n_epochs = 100
     history = model.fit(
         X_train,
         y_train,
@@ -172,6 +180,9 @@ def evaluate(
     X_valid: pd.DataFrame,
     y_valid: pd.Series,
     prefix: str,
+    save: bool = False,
+    h3_res: int = None,
+    time_interval_length: int = None,
 ) -> dict:
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
@@ -184,6 +195,8 @@ def evaluate(
         y_valid,
         model_params,
     )
+    if save:
+        save_model(model, h3_res, time_interval_length)
     y_pred = model.predict(X_valid)
     return get_evaluation_metrics(y_valid, y_pred, prefix)
 
@@ -239,7 +252,17 @@ def execute_stage(
         train_start = time.time()
 
         results = (
-            evaluate(model_params, X_train, y_train, X_test, y_test, prefix="test")
+            evaluate(
+                model_params,
+                X_train,
+                y_train,
+                X_test,
+                y_test,
+                prefix="test",
+                save=True,
+                h3_res=h3_res,
+                time_interval_length=time_interval_length,
+            )
             if test_phase
             else evaluate_k_fold(X_train, y_train, model_params, prefix="val")
         )

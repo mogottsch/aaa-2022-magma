@@ -89,9 +89,26 @@ NN_FOURTH_STAGE_AVAILABILITY_RESULTS_PATH = os.path.join(
     REPO_DATA_DIR_PATH, "nn_fourth_stage_availability_results.parquet"
 )
 
+XGBOOST_FIRST_STAGE_DEMAND_RESULTS_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "xgboost_first_stage_demand_results.parquet"
+)
+XGBOOST_SECOND_STAGE_DEMAND_RESULTS_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "xgboost_second_stage_demand_results.parquet"
+)
+
+XGBOOST_FIRST_STAGE_AVAILABILITY_RESULTS_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "xgboost_first_stage_availability_results.parquet"
+)
+XGBOOST_SECOND_STAGE_AVAILABILITY_RESULTS_PATH = os.path.join(
+    REPO_DATA_DIR_PATH, "xgboost_second_stage_availability_results.parquet"
+)
+
+
 FINAL_MODEL_RESULTS_PATH = os.path.join(
     REPO_DATA_DIR_PATH, "final_model_results.parquet"
 )
+
+KERAS_MODELS_DIR_PATH = os.path.join(PROCESSED_DATA_DIR_PATH, "keras_models")
 
 FLEXZONE_GEOJSON_PATH = os.path.join(REPO_DATA_DIR_PATH, "leipzig.geojson")
 
