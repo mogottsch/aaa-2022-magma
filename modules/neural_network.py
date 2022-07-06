@@ -129,7 +129,7 @@ def train_model(
 
     model.add(Dense(1, activation="relu"))  # our outcomes are always positive
 
-    model.compile(optimizer="adam", loss="mean_squared_error", metrics=["mae"])
+    model.compile(optimizer="adam", loss="mean_squared_error", metrics=["mse"])
 
     early_stopping = EarlyStopping(patience=5, min_delta=0.001)
     # the number of epochs does not matter for us, as long as it
