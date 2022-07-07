@@ -134,7 +134,7 @@ def train_model(
     early_stopping = EarlyStopping(patience=5, min_delta=0.001)
     # the number of epochs does not matter for us, as long as it
     # is high enough so that we can stop the training early
-    n_epochs = 100
+    n_epochs = 200
     history = model.fit(
         X_train,
         y_train,
@@ -221,12 +221,6 @@ def execute_stage(
         model_data_test.drop(columns=["outcome"]),
         model_data_test.outcome,
     )
-    # if test_phase:
-    #     X_train = np.concatenate([X_train, X_valid])
-    #     y_train = np.concatenate([y_train, y_valid])
-
-    #     X_valid = X_test
-    #     y_valid = y_test
 
     iterator = tqdm(get_hyperparameters()) if not silent else get_hyperparameters()
     for model_params in iterator:

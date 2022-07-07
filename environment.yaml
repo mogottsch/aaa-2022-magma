@@ -18,5 +18,8 @@ dependencies:
   - fastparquet
   - tensorflow
   - keras
+  - plotly
+  - shapely
+  - folium
   - pip:
       - h3
