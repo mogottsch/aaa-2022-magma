@@ -1,3 +1,4 @@
+import re
 from typing import Tuple
 import pandas as pd
 import numpy as np
@@ -51,8 +52,10 @@ def get_model_meta_as_dict(model_meta: dict) -> dict:
 
 
 def get_first_stage_hyperparameters() -> list:
+    batch_sizes = [32, 64, 128, 256, 512]
+    batch_sizes.reverse()
     metas = {
-        "batch_size": [8, 16, 32, 64, 128, 256, 512],
+        "batch_size": batch_sizes,
         "nodes_per_feature": [1],
         "n_layers": [1],
         "activation": ["relu"],
@@ -131,10 +134,12 @@ def train_model(
 
     model.compile(optimizer="adam", loss="mean_squared_error", metrics=["mse"])
 
-    early_stopping = EarlyStopping(patience=5, min_delta=0.001)
+    early_stopping = EarlyStopping(
+        patience=50, min_delta=y_train.std() / 10, restore_best_weights=True
+    )
     # the number of epochs does not matter for us, as long as it
     # is high enough so that we can stop the training early
-    n_epochs = 200
+    n_epochs = 1000
     history = model.fit(
         X_train,
         y_train,
