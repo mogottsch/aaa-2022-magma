@@ -11,7 +11,7 @@ def perform_randomized_grid_search(
     h3_res,
     time_interval_length,
 ):
-    model_data_train, model_data_test = model_data_getter(h3_res, time_interval_length)
+    model_data_train, _ = model_data_getter(h3_res, time_interval_length)
 
     X_train, y_train = (
         model_data_train.drop(columns=["outcome"]),

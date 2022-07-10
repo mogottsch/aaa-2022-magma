@@ -1,8 +1,6 @@
 import plotly.express as px
-import json
 from geojson import Feature, FeatureCollection
 import h3
-import geopandas as gpd
 from shapely.geometry import Polygon
 
 # documentation with explanation of kwargs
@@ -19,7 +17,6 @@ def plot_choropleth(geo_data, hex_col, color_by_col, **kwargs):
     if not "color_continuous_scale" in kwargs:
         kwargs["color_continuous_scale"] = "Viridis"
 
-    # return geojson
     fig = px.choropleth_mapbox(
         geo_data,
         geojson=geojson,
@@ -35,8 +32,6 @@ def h3_to_geojson(df_hex, hex_field):
     list_features = []
 
     for i, row in df_hex.iterrows():
-        # list_features.append(Polygon(h3.h3_to_geo_boundary(row[hex_field])))
-
         feature = Feature(
             geometry=Polygon(h3.h3_to_geo_boundary(row[hex_field], geo_json=True)),
             id=row[hex_field],

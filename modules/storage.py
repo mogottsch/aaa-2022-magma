@@ -2,8 +2,6 @@ import pandas as pd
 from modules.config import *
 from sklearn.model_selection import train_test_split
 
-# ---------------------------------------------------------------------------------------------------
-
 
 def get_demand_model_data(h3_res, time_interval_length) -> pd.DataFrame:
     return get_model_data(h3_res, time_interval_length, "demand", "demand")

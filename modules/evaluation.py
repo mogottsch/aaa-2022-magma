@@ -8,8 +8,6 @@ import pandas as pd
 
 from modules.config import FINAL_MODEL_RESULTS_PATH
 
-# ---------------------------------------------------------------------------------------------------
-
 
 def mean_average_percentage_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return mean_absolute_error(y_true, y_pred) / y_true.mean()

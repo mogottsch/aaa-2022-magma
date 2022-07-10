@@ -1,5 +1,3 @@
-import itertools
-from time import time
 from pandas import DataFrame, Series
 import pandas as pd
 import h3
