@@ -6,27 +6,27 @@ from sklearn.model_selection import train_test_split
 
 
 def get_demand_model_data(h3_res, time_interval_length) -> pd.DataFrame:
+    return get_model_data(h3_res, time_interval_length, "demand", "demand")
+
+
+def get_demand_orig_dest_model_data() -> pd.DataFrame:
     return get_model_data(
-        h3_res,
-        time_interval_length,
+        ORIGIN_DESTINATION_H3_RESOLUTION,
+        ORIGIN_DESTINATION_TIME_INTERVAL_LENGTH,
+        "demand_orig_dest",
         "demand",
-        "demand"
     )
 
 
 def get_availability_model_data(h3_res, time_interval_length) -> pd.DataFrame:
-    return get_model_data(
-        h3_res,
-        time_interval_length,
-        "availability",
-        "n_bikes"
-    )
+    return get_model_data(h3_res, time_interval_length, "availability", "n_bikes")
 
 
 def get_model_data(h3_res, time_interval_length, predicted_variable, outcome_column):
     model_data = pd.read_feather(
         os.path.join(
-            MODEL_DATA_DIR_PATH, f"{predicted_variable}_{h3_res}_{time_interval_length}.feather"
+            MODEL_DATA_DIR_PATH,
+            f"{predicted_variable}_{h3_res}_{time_interval_length}.feather",
         )
     )
     model_data = model_data.rename(columns={outcome_column: "outcome"})

@@ -12,7 +12,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.callbacks import EarlyStopping
 
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 from sklearn.preprocessing import StandardScaler
 from modules.storage import get_results_df
 from modules.config import *
@@ -24,7 +24,7 @@ from modules.neural_network import *
 
 
 def check_if_model_result_exists(
-    results_path, h3_res, time_interval_length, model_params
+    results_path: str, h3_res: int, time_interval_length: int, model_params: dict
 ) -> bool:
     results = get_results_df(results_path)
     if results.empty:
@@ -40,7 +40,7 @@ def check_if_model_result_exists(
     ].empty
 
 
-def get_model_meta_as_dict(model_meta) -> dict:
+def get_model_meta_as_dict(model_meta: dict) -> dict:
     return {
         "batch_size": model_meta[0],
         "nodes_per_feature": model_meta[1],
@@ -63,7 +63,7 @@ def get_first_stage_hyperparameters() -> list:
     return models_metas
 
 
-def get_second_stage_hyperparameters(best_batch_size) -> list:
+def get_second_stage_hyperparameters(best_batch_size: int) -> list:
     metas = {
         "batch_size": [best_batch_size],
         "nodes_per_feature": [0.5, 1, 1.5],
@@ -77,7 +77,10 @@ def get_second_stage_hyperparameters(best_batch_size) -> list:
 
 
 def get_third_stage_hyperparameters(
-    best_batch_size, best_nodes_per_feature, best_n_layers, best_activation
+    best_batch_size: int,
+    best_nodes_per_feature: float,
+    best_n_layers: int,
+    best_activation: str,
 ) -> list:
     metas = {
         "batch_size": [best_batch_size],
@@ -91,52 +94,53 @@ def get_third_stage_hyperparameters(
     return models_metas
 
 
-def split_and_scale_data(
-    model_data_train, model_data_test,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    y_train = model_data_train.outcome
-    X_train = model_data_train.drop(columns=["outcome"])
-
-    y_test = model_data_test.outcome
-    X_test = model_data_test.drop(columns=["outcome"])
-
-    X_train, X_valid, y_train, y_valid = train_test_split(
-        X_train, y_train, train_size=0.7, random_state=42
+def save_model(model: Sequential, h3_res: int, time_interval_length: int):
+    model.save(
+        os.path.join(KERAS_MODELS_DIR_PATH, f"{h3_res}_{time_interval_length}.h5")
     )
-
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_valid = scaler.transform(X_valid)
-    X_test = scaler.transform(X_test)
-    return X_train, X_valid, X_test, y_train, y_valid, y_test
 
 
 def train_model(
-    X_train, y_train, batch_size, nodes_per_feature, n_layers, activation, dropout
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_valid: pd.DataFrame,
+    y_valid: pd.Series,
+    model_params: dict,
 ) -> Sequential:
     model = Sequential()
     model.add(
-        Dense(nodes_per_feature, activation=activation, input_shape=(X_train.shape[1],))
+        Dense(
+            model_params["nodes_per_feature"],
+            activation=model_params["activation"],
+            input_shape=(X_train.shape[1],),
+        )
     )
     n_features = X_train.shape[1]
-    for _ in range(n_layers):
+    for _ in range(model_params["n_layers"]):
 
-        model.add(Dense(nodes_per_feature * n_features, activation=activation))
-        if dropout >= 0:
-            model.add(Dropout(dropout))
+        model.add(
+            Dense(
+                model_params["nodes_per_feature"] * n_features,
+                activation=model_params["activation"],
+            )
+        )
+        if model_params["dropout"] >= 0:
+            model.add(Dropout(model_params["dropout"]))
 
     model.add(Dense(1, activation="relu"))  # our outcomes are always positive
 
     model.compile(optimizer="adam", loss="mean_squared_error", metrics=["mae"])
 
     early_stopping = EarlyStopping(patience=5, min_delta=0.001)
-    n_epochs = 40
+    # the number of epochs does not matter for us, as long as it
+    # is high enough so that we can stop the training early
+    n_epochs = 100
     history = model.fit(
         X_train,
         y_train,
+        validation_data=(X_valid, y_valid),
         epochs=n_epochs,
-        batch_size=batch_size,
-        validation_split=0.25,
+        batch_size=model_params["batch_size"],
         callbacks=[early_stopping],
         verbose=0,
     )
@@ -144,6 +148,57 @@ def train_model(
     if n_trained_epochs == n_epochs:
         warnings.warn("Model was stopped while validation loss was still improving")
     return model
+
+
+def evaluate_k_fold(
+    X_train: pd.DataFrame, y_train: pd.Series, model_params: dict, prefix: str
+) -> dict:
+    kfold = KFold(n_splits=5, shuffle=True, random_state=42)
+    evaluation_metrics = []
+    for train, valid in kfold.split(X_train):
+        evaluation_metrics.append(
+            evaluate(
+                model_params,
+                X_train.iloc[train],
+                y_train.iloc[train],
+                X_train.iloc[valid],
+                y_train.iloc[valid],
+                prefix=prefix,
+            )
+        )
+
+    return {
+        key: np.mean([metric[key] for metric in evaluation_metrics])
+        for key in evaluation_metrics[0].keys()
+    }
+
+
+def evaluate(
+    model_params: dict,
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_valid: pd.DataFrame,
+    y_valid: pd.Series,
+    prefix: str,
+    save: bool = False,
+    h3_res: int = None,
+    time_interval_length: int = None,
+) -> dict:
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_valid = scaler.transform(X_valid)
+
+    model = train_model(
+        X_train,
+        y_train,
+        X_valid,
+        y_valid,
+        model_params,
+    )
+    if save:
+        save_model(model, h3_res, time_interval_length)
+    y_pred = model.predict(X_valid)
+    return get_evaluation_metrics(y_valid, y_pred, prefix)
 
 
 def execute_stage(
@@ -155,17 +210,23 @@ def execute_stage(
     test_phase=False,
     silent=False,
 ):
-    model_data = model_data_getter(h3_res, time_interval_length)
+    model_data_train, model_data_test = model_data_getter(h3_res, time_interval_length)
 
-    X_train, X_valid, X_test, y_train, y_valid, y_test = split_and_scale_data(
-        model_data
+    X_train, y_train = (
+        model_data_train.drop(columns=["outcome"]),
+        model_data_train.outcome,
     )
-    if test_phase:
-        X_train = np.concatenate([X_train, X_valid])
-        y_train = np.concatenate([y_train, y_valid])
 
-        X_valid = X_test
-        y_valid = y_test
+    X_test, y_test = (
+        model_data_test.drop(columns=["outcome"]),
+        model_data_test.outcome,
+    )
+    # if test_phase:
+    #     X_train = np.concatenate([X_train, X_valid])
+    #     y_train = np.concatenate([y_train, y_valid])
+
+    #     X_valid = X_test
+    #     y_valid = y_test
 
     iterator = tqdm(get_hyperparameters()) if not silent else get_hyperparameters()
     for model_params in iterator:
@@ -188,20 +249,27 @@ def execute_stage(
                 tqdm.write(console_out + " # already trained")
             continue
 
-        model = train_model(
-            X_train,
-            y_train,
-            model_params["batch_size"],
-            model_params["nodes_per_feature"],
-            model_params["n_layers"],
-            model_params["activation"],
-            model_params["dropout"],
+        train_start = time.time()
+
+        results = (
+            evaluate(
+                model_params,
+                X_train,
+                y_train,
+                X_test,
+                y_test,
+                prefix="test",
+                save=True,
+                h3_res=h3_res,
+                time_interval_length=time_interval_length,
+            )
+            if test_phase
+            else evaluate_k_fold(X_train, y_train, model_params, prefix="val")
         )
+        train_duration = time.time() - train_start
 
         if not silent:
             tqdm.write(console_out + " # trained", end="\r")
-
-        y_pred_for_validation = model.predict(X_valid)
 
         results = {
             "h3_res": h3_res,
@@ -211,9 +279,8 @@ def execute_stage(
             "n_layers": model_params["n_layers"],
             "activation": model_params["activation"],
             "dropout": model_params["dropout"],
-            **get_evaluation_metrics(
-                y_valid, y_pred_for_validation, "test" if test_phase else "val"
-            ),
+            "train_duration": train_duration,
+            **results,
         }
         store_results(pd.DataFrame(data=results, index=[0]), results_path)
         duration = time.time() - start_time
