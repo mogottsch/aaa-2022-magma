@@ -17,3 +17,4 @@ conda env create -f environment.yaml
 ### Data
 
 Place the `leipzig.tar` in the `00_data` folder.
+Download the land use data from https://uni-koeln.sciebo.de/s/rywfPhIcGxgtLsJ, unzip and place it into "00_data/repo_data"
