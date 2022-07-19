@@ -23,7 +23,15 @@ from modules.svm import *
 def check_if_model_result_empty(
     results: pd.DataFrame, h3_res: int, time_interval_length: int, meta: list
 ) -> bool:
-    return results[
+    console_out = (f"h3_res: {h3_res} - "
+                    + f"time_interval_length: {time_interval_length} - "
+                    + f"param_kernel: {meta[0]} - "
+                    + f"param_C: {meta[1]} - "
+                    + f"param_gamma: {meta[2]} - "
+                    + f"param_degree: {meta[3]}")
+    tqdm.write(console_out, end="\r")
+
+    is_empty = results[
         (results["h3_res"] == h3_res)
         & (results["time_interval_length"] == time_interval_length)
         & (results["param_kernel"] == meta[0])
@@ -31,6 +39,12 @@ def check_if_model_result_empty(
         & ((results["param_gamma"] == meta[2]) | (pd.isnull(results["param_gamma"])))
         & ((results["param_degree"] == meta[3]) | (pd.isnull(results["param_degree"])))
     ]["mean_test_score"].empty
+
+
+    if not is_empty:
+        tqdm.write(console_out + " # already trained")
+    
+    return is_empty
 
 
 def get_param_grid(model_meta: dict) -> dict:
@@ -99,8 +113,6 @@ def get_availabe_models_metas_second_stage(
         by=["mean_test_score"], ascending=False
     )
     meta = [
-        h3_res,
-        time_interval_length,
         best_model["param_kernel"].iloc[0],
         best_model["param_C"].iloc[0],
         best_model["param_gamma"].iloc[0],
