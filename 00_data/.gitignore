@@ -3,5 +3,6 @@
 !*/
 !.gitignore
 !repo_data/*
+!repo_data/weather/*
 !.processed
 !repo_data/weather_aggr.parquet
